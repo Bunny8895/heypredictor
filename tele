@@ -1,1 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HeyPredictor — AI Match Predictions for Every Game</title>
+<meta name="description" content="Get AI-powered match predictions, win probabilities, team form, player trends, and statistical insights to help you understand every match before kickoff.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0A0D18;
+    --panel:#12162A;
+    --panel-2:#191F38;
+    --border:#262C4A;
+    --violet:#8B7FFF;
+    --cyan:#2FE6C8;
+    --amber:#FFB238;
+    --red:#FF6B6B;
+    --ink:#EDEEF7;
+    --muted:#8C93B8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  a{color:inherit;}
 
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    padding:64px 24px 46px;
+    max-width:1180px;
+    margin:0 auto;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    inset:-40% -10% auto -10%;
+    height:420px;
+    background:
+      radial-gradient(420px 220px at 15% 20%, rgba(139,127,255,0.16), transparent 70%),
+      radial-gradient(360px 200px at 85% 10%, rgba(47,230,200,0.12), transparent 70%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .hero-inner{position:relative; z-index:1;}
+  .wordmark{
+    display:inline-flex;
+    align-items:center;
+    gap:11px;
+    margin-bottom:28px;
+  }
+  .logo-mark{ flex-shrink:0; filter:drop-shadow(0 0 10px rgba(139,127,255,0.35)); }
+  .wordmark-text{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:500;
+    font-size:22px;
+    letter-spacing:0.2px;
+    color:var(--muted);
+  }
+  .wordmark-text b{color:var(--ink); font-weight:700;}
+  .hero h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:clamp(34px,5.4vw,58px);
+    line-height:1.05;
+    letter-spacing:-0.5px;
+    margin:0 0 16px;
+    max-width:820px;
+  }
+  .hero h1 .accent{
+    background:linear-gradient(90deg,var(--violet),var(--cyan));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .hero .tagline{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    letter-spacing:1.2px;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:18px;
+  }
+  .hero p.desc{
+    font-size:16px;
+    line-height:1.6;
+    color:var(--muted);
+    max-width:640px;
+    margin:0;
+  }
+
+  /* ---------- Ticker (signature strip) ---------- */
+  .ticker-wrap{
+    background:var(--panel);
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+    overflow:hidden;
+    white-space:nowrap;
+    position:relative;
+  }
+  .ticker-wrap::before, .ticker-wrap::after{
+    content:"";
+    position:absolute; top:0; bottom:0; width:48px; z-index:2;
+  }
+  .ticker-wrap::before{left:0; background:linear-gradient(90deg,var(--panel),transparent);}
+  .ticker-wrap::after{right:0; background:linear-gradient(270deg,var(--panel),transparent);}
+  .ticker{
+    display:inline-block;
+    padding:9px 0;
+    animation:scroll-left 48s linear infinite;
+  }
+  .ticker:hover{animation-play-state:paused;}
+  @keyframes scroll-left{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+  .tick-item{
+    display:inline-flex; align-items:center; gap:9px;
+    font-family:'JetBrains Mono',monospace; font-size:12.5px;
+    padding:0 20px; border-right:1px solid var(--border); color:var(--ink);
+  }
+  .tick-item .lg{color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:1px;}
+  .tick-item .score{color:var(--cyan); font-weight:600;}
+
+  /* ---------- Controls ---------- */
+  .controls{
+    max-width:1180px; margin:0 auto; padding:24px 24px 0;
+    display:flex; gap:14px; flex-wrap:wrap; align-items:center;
+  }
+  select, input[type=text]{
+    background:var(--panel);
+    border:1px solid var(--border);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:10px 12px;
+    border-radius:6px;
+    outline:none;
+  }
+  select:focus, input[type=text]:focus{border-color:var(--violet);}
+  .all-leagues-btn{
+    background:var(--panel-2); border:1px solid var(--border); color:var(--ink);
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;
+    padding:10px 16px; border-radius:6px; cursor:pointer;
+  }
+  .all-leagues-btn.active{
+    background:linear-gradient(90deg,var(--violet),var(--cyan)); color:#0A0D18; border-color:transparent;
+  }
+  .all-leagues-btn:hover{filter:brightness(1.1);}
+  .section-heading{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px;
+    margin:0 0 14px;
+  }
+  .league-block{margin:34px 0 8px;}
+  .league-block-header{
+    display:flex; justify-content:space-between; align-items:baseline;
+    border-bottom:1px solid var(--border);
+    padding-bottom:8px; margin-bottom:14px;
+  }
+  .lb-title{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px;
+    color:var(--ink);
+  }
+  .lb-count{
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:1px;
+  }
+  .cat-nav{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin:6px 0 30px;
+  }
+  .cat-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--panel); border:1px solid var(--border); color:var(--ink);
+    text-decoration:none; font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
+    padding:7px 13px; border-radius:20px; transition:border-color .15s, transform .15s;
+  }
+  .cat-chip:hover{ border-color:var(--violet); transform:translateY(-1px); }
+  .category-block{ margin:44px 0; }
+  .category-header{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:16px;
+    padding-bottom:10px;
+    border-bottom:2px solid var(--border);
+  }
+  .cat-emoji{ font-size:24px; line-height:1; }
+  .category-header .section-heading{ margin:0; }
+
+  .cricket-card{ border-color:rgba(47,230,200,0.25); }
+  .live-badge{
+    display:inline-flex; align-items:center; gap:5px;
+    background:rgba(229,72,77,0.15); color:var(--red);
+    font-family:'JetBrains Mono',monospace; font-weight:600; font-size:10px;
+    letter-spacing:1px; padding:2px 8px; border-radius:20px;
+  }
+  .live-pip{
+    width:6px; height:6px; border-radius:50%; background:var(--red);
+    box-shadow:0 0 6px var(--red); animation:pulse 1.4s infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .cricket-teams{ margin:10px 0; display:flex; flex-direction:column; gap:6px; }
+  .cricket-team-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    background:#0D1120; border:1px solid var(--border); border-radius:6px; padding:8px 11px;
+  }
+  .ct-name{ font-size:13.5px; font-weight:600; color:var(--ink); }
+  .ct-run{ font-family:'JetBrains Mono',monospace; font-size:13.5px; color:var(--cyan); font-weight:600; }
+
+  .empty-card{
+    display:flex; flex-direction:column; align-items:flex-start; gap:10px;
+    max-width:420px; padding:26px 22px;
+  }
+  .empty-emoji{ font-size:28px; opacity:0.7; }
+  .empty-headline{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:var(--ink); }
+  .empty-sub{ color:var(--muted); font-size:13px; }
+  .empty-link-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:linear-gradient(90deg,var(--violet),var(--cyan)); color:#0A0D18;
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13.5px;
+    padding:9px 16px; border-radius:8px; text-decoration:none;
+  }
+  .empty-link-btn:hover{ filter:brightness(1.08); }
+  .tabs{
+    max-width:1180px; margin:18px auto 0; padding:0 24px;
+    display:flex; gap:4px; border-bottom:1px solid var(--border); flex-wrap:wrap;
+  }
+  .tab-btn{
+    background:none; border:none; color:var(--muted);
+    font-family:'Space Grotesk',sans-serif; font-weight:500;
+    font-size:15px; padding:11px 15px; cursor:pointer;
+    border-bottom:2px solid transparent; transition:color .15s;
+  }
+  .tab-btn:hover{color:var(--ink);}
+  .tab-btn.active{color:var(--ink); border-bottom-color:var(--violet);}
+  .tab-btn:focus-visible{outline:2px solid var(--violet); outline-offset:2px;}
+
+  /* ---------- Content ---------- */
+  main{max-width:1180px; margin:0 auto; padding:22px 24px 80px;}
+  .model-note{
+    display:flex; gap:10px; align-items:flex-start;
+    background:var(--panel); border:1px solid var(--border);
+    border-left:3px solid var(--violet);
+    border-radius:6px; padding:12px 14px; margin-bottom:18px;
+    font-size:12.5px; color:var(--muted); line-height:1.55;
+  }
+  .model-note b{color:var(--ink);}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px;}
+  .card{
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:16px; position:relative;
+  }
+  .card.top-pick{border-color:rgba(255,178,56,0.5); box-shadow:0 0 0 1px rgba(255,178,56,0.12);}
+  .league-eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:1.2px; margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .pick-badge{
+    background:linear-gradient(90deg,var(--amber),#ffcf85);
+    color:#231400; font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:10px; letter-spacing:0.5px; text-transform:uppercase;
+    padding:2px 8px; border-radius:20px;
+  }
+  .matchup{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;}
+  .team{font-size:15px; font-weight:600; flex:1;}
+  .team.away{text-align:right;}
+  .score-box{
+    font-family:'JetBrains Mono',monospace; font-size:19px; font-weight:600;
+    color:var(--cyan); background:#0D1120; border:1px solid var(--border);
+    border-radius:6px; padding:4px 10px; min-width:60px; text-align:center;
+  }
+  .meta{margin-top:10px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between;}
+
+  /* confidence bar - signature element */
+  .conf-wrap{margin-top:6px;}
+  .conf-labels{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:11px; margin-bottom:5px; color:var(--muted);}
+  .conf-labels .win-name{color:var(--ink); font-weight:600;}
+  .conf-bar{
+    display:flex; height:10px; border-radius:5px; overflow:hidden;
+    background:#0D1120; border:1px solid var(--border);
+  }
+  .conf-seg{height:100%;}
+  .conf-seg.home{background:linear-gradient(90deg,var(--violet),#a89bff);}
+  .conf-seg.draw{background:#3b4066;}
+  .conf-seg.away{background:linear-gradient(90deg,#1fb9a1,var(--cyan));}
+  .conf-pct-row{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:11px; margin-top:5px; color:var(--muted);}
+  .conf-tag{
+    display:inline-block; margin-top:8px; font-size:11px; padding:3px 9px;
+    border-radius:20px; font-family:'JetBrains Mono',monospace;
+    background:var(--panel-2); border:1px solid var(--border); color:var(--muted);
+  }
+  .rationale{font-size:12px; color:var(--muted); margin-top:9px; line-height:1.5;}
+
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  thead th{
+    text-align:left; font-family:'JetBrains Mono',monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:1px; color:var(--muted);
+    padding:10px 8px; border-bottom:1px solid var(--border);
+  }
+  tbody td{padding:9px 8px; border-bottom:1px solid var(--border);}
+  tbody tr:hover{background:var(--panel-2);}
+  .rank-cell{font-family:'JetBrains Mono',monospace; color:var(--violet);}
+
+  .state-msg{color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:13px; padding:40px 0; text-align:center;}
+  .state-msg.error{color:var(--red);}
+
+  .search-row{display:flex; gap:10px; margin-bottom:18px;}
+  .search-row button{
+    background:linear-gradient(90deg,var(--violet),var(--cyan));
+    color:#0A0D18; border:none; font-family:'Space Grotesk',sans-serif;
+    font-weight:700; font-size:14px; padding:0 20px; border-radius:6px; cursor:pointer;
+  }
+  .search-row button:hover{filter:brightness(1.08);}
+
+  .player-card, .team-card{
+    display:flex; gap:14px; background:var(--panel); border:1px solid var(--border);
+    border-radius:8px; padding:14px; margin-bottom:10px;
+  }
+  .player-card img, .team-card img{
+    width:60px; height:60px; object-fit:contain; background:#0D1120;
+    border-radius:6px; border:1px solid var(--border);
+  }
+  .pc-name{font-weight:600; font-size:15px;}
+  .pc-sub{color:var(--muted); font-size:12px; margin-top:3px; font-family:'JetBrains Mono',monospace;}
+
+  footer{
+    max-width:1180px; margin:0 auto; padding:20px 24px 40px;
+    color:var(--muted); font-size:12px; border-top:1px solid var(--border);
+  }
+  footer a{color:var(--cyan); text-decoration:none;}
+
+  @media (prefers-reduced-motion: reduce){ .ticker{animation:none;} }
+
+  /* ---------- WhatsApp fixed action button ---------- */
+  .wa-fab{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:1000;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#25D366;
+    color:#fff;
+    text-decoration:none;
+    padding:13px 20px 13px 14px;
+    border-radius:999px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.35), 0 0 0 0 rgba(37,211,102,0.6);
+    animation:wa-pulse 2.6s ease-out infinite;
+    transition:transform .15s, filter .15s;
+  }
+  .wa-fab:hover{ transform:translateY(-2px); filter:brightness(1.06); }
+  .wa-fab .wa-icon{ flex-shrink:0; }
+  @keyframes wa-pulse{
+    0%{ box-shadow:0 6px 20px rgba(0,0,0,0.35), 0 0 0 0 rgba(37,211,102,0.55); }
+    70%{ box-shadow:0 6px 20px rgba(0,0,0,0.35), 0 0 0 14px rgba(37,211,102,0); }
+    100%{ box-shadow:0 6px 20px rgba(0,0,0,0.35), 0 0 0 0 rgba(37,211,102,0); }
+  }
+  @media (max-width:560px){
+    .wa-fab{ padding:11px 16px 11px 12px; font-size:12.5px; gap:7px; right:12px; bottom:14px; }
+    .wa-icon{ width:22px; height:22px; }
+  }
+  @media (max-width:360px){
+    .wa-fab{ padding:9px 12px 9px 10px; font-size:11.5px; gap:6px; right:8px; bottom:10px; }
+    .wa-icon{ width:19px; height:19px; }
+  }
+  @media (prefers-reduced-motion: reduce){ .wa-fab{ animation:none; } }
+</style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%238B7FFF'/%3E%3Cstop offset='1' stop-color='%232FE6C8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='3' y='18' width='6' height='11' rx='1.5' fill='url(%23g)' opacity='0.55'/%3E%3Crect x='13' y='11' width='6' height='18' rx='1.5' fill='url(%23g)' opacity='0.8'/%3E%3Crect x='23' y='3' width='6' height='26' rx='1.5' fill='url(%23g)'/%3E%3Ccircle cx='26' cy='3' r='3.4' fill='%23FFB238'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="wordmark">
+      <svg class="logo-mark" width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+        <defs>
+          <linearGradient id="logoGrad" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#8B7FFF"/>
+            <stop offset="1" stop-color="#2FE6C8"/>
+          </linearGradient>
+        </defs>
+        <rect x="2" y="17" width="5.5" height="10" rx="1.5" fill="url(#logoGrad)" opacity="0.55"/>
+        <rect x="11.5" y="10" width="5.5" height="17" rx="1.5" fill="url(#logoGrad)" opacity="0.8"/>
+        <rect x="21" y="2" width="5.5" height="25" rx="1.5" fill="url(#logoGrad)"/>
+        <circle cx="23.75" cy="2.5" r="3.1" fill="#FFB238"/>
+      </svg>
+      <span class="wordmark-text"><b>Hey</b>Predictor</span>
+    </div>
+    <h1>AI Match Predictions <span class="accent">for Every Game</span></h1>
+    <div class="tagline">Smarter match predictions. Powered by AI.</div>
+    <p class="desc">Get AI-powered match predictions, win probabilities, team form, player trends, and statistical insights to help you understand every match before kickoff.</p>
+  </div>
+</div>
+
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker"><span class="tick-item">Loading today's board&hellip;</span></div>
+</div>
+
+<div class="controls">
+  <button id="allLeaguesBtn" class="all-leagues-btn">All Leagues</button>
+  <select id="sportSelect" aria-label="Choose a sport"><option value="">Loading sports&hellip;</option></select>
+  <select id="leagueSelect" aria-label="Choose a league"><option value="">Select a sport first</option></select>
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="predictions">Predictions</button>
+  <button class="tab-btn" data-tab="fixtures">Schedule</button>
+  <button class="tab-btn" data-tab="results">Results</button>
+  <button class="tab-btn" data-tab="standings">Standings</button>
+  <button class="tab-btn" data-tab="teams">Team Search</button>
+  <button class="tab-btn" data-tab="players">Player Search</button>
+</div>
+
+<main id="content">
+  <div class="state-msg">Pick a sport and league above to get started.</div>
+</main>
+
+<footer>
+  Predictions are generated by a transparent statistical model (recent form + home advantage) &mdash; not a trained neural network &mdash; and are for informational purposes only.
+</footer>
+
+<script>
+const API = "https://www.thesportsdb.com/api/v1/json/123";
+let leaguesBySport = {};
+let currentLeagueId = null;
+let currentLeagueName = null;
+let currentSport = null;
+let activeTab = "predictions";
+const teamFormCache = {};
+let isHomeFeed = true;
+let featuredLeagues = [];
+let homeFeedNextCache = null;
+let homeFeedPastCache = null;
+
+const DRAW_SPORTS = ["Soccer","Rugby","Rugby Union","Rugby League","Cricket"];
+const SPORT_CATEGORIES = [
+  { label:"Cricket",    emoji:"\u{1F3CF}", sport:"Cricket",    source:"cricbuzz", leagueKeywords:[] },
+  { label:"Football",   emoji:"\u26BD",     sport:"Soccer",     leagueKeywords:["premier league","la liga","serie a","bundesliga","champions league","ligue 1"] },
+  { label:"Kabaddi",    emoji:"\u{1F93C}", sport:"Kabaddi",    leagueKeywords:["pro kabaddi","kabaddi"] },
+  { label:"Tennis",     emoji:"\u{1F3BE}", sport:"Tennis",     source:"espn" },
+  { label:"Basketball", emoji:"\u{1F3C0}", sport:"Basketball", leagueKeywords:["nba"] }
+];
+const LEAGUES_PER_CATEGORY = 2;
+const PREDICTIONS_PER_LEAGUE = 3;
+const SCHEDULE_PER_LEAGUE = 5;
+
+// Last-resort fallback if TheSportsDB's all_leagues.php has a bad moment and the
+// dynamic keyword search comes up empty for a sport that's reliably in their DB.
+const KNOWN_LEAGUE_IDS = {
+  Football:   [{ idLeague:"4328", strLeague:"English Premier League", strSport:"Soccer" }],
+  Basketball: [{ idLeague:"4387", strLeague:"NBA", strSport:"Basketball" }]
+};
+
+// ---------- Cricket: dedicated free data source (no API key needed) ----------
+// TheSportsDB's free tier doesn't reliably carry cricket, so cricket uses
+// Cricbuzz's public unofficial endpoint instead (real live scores, ball-by-ball state).
+const CRICBUZZ_API = "https://cricbuzz-live.vercel.app/v1";
+
+async function cricbuzzMatches(kind, type){
+  try{
+    const data = await getJSON(`${CRICBUZZ_API}/matches/${kind}?type=${type}`);
+    return (data && data.data && data.data.matches) || [];
+  }catch(err){ return []; }
+}
+
+async function cricbuzzScoreUpdate(matchId){
+  try{
+    const data = await getJSON(`${CRICBUZZ_API}/score/${matchId}`);
+    return (data && data.data && data.data.update) || null;
+  }catch(err){ return null; }
+}
+
+// Reads Cricbuzz's own "X need Y runs in Z balls" line and turns it into a
+// simple, honestly-labeled chase-probability read. Not used when that exact
+// pattern isn't present (rain delays, first innings, just-completed, etc).
+function computeChaseRead(updateText){
+  if(!updateText) return null;
+  const m = updateText.match(/([A-Za-z][A-Za-z .'-]*?)\s+need\s+(\d+)\s+runs?\s+(?:in|off)\s+(\d+)\s+balls?/i);
+  if(!m) return null;
+  const [, chasingTeam, runsStr, ballsStr] = m;
+  const runsNeeded = Number(runsStr), ballsLeft = Number(ballsStr);
+  if(!ballsLeft) return null;
+  const reqRR = (runsNeeded / ballsLeft) * 6;
+  // Bounded heuristic: ~6 runs/over is comfortably gettable, ~18 is nearly impossible.
+  const raw = 1 - (reqRR - 6) / 12;
+  const pct = Math.round(Math.max(5, Math.min(95, raw * 100)));
+  return { chasingTeam: chasingTeam.trim(), reqRR, pct };
+}
+
+async function buildCricketSection(){
+  const [liveIntl, liveLeague, recentIntl, recentLeague, upIntl, upLeague] = await Promise.all([
+    cricbuzzMatches("live","international"), cricbuzzMatches("live","league"),
+    cricbuzzMatches("recent","international"), cricbuzzMatches("recent","league"),
+    cricbuzzMatches("upcoming","international"), cricbuzzMatches("upcoming","league")
+  ]);
+  const live = [...liveIntl, ...liveLeague].slice(0,6);
+  const recent = [...recentIntl, ...recentLeague].slice(0,4);
+  const upcoming = [...upIntl, ...upLeague].slice(0,4);
+
+  if(live.length === 0 && recent.length === 0 && upcoming.length === 0){
+    return `<div class="state-msg" style="padding:16px 0;">No cricket matches from the live feed right now &mdash; try again shortly.</div>`;
+  }
+
+  const chaseReads = await poolMap(live, async m => {
+    const update = await cricbuzzScoreUpdate(m.id);
+    return computeChaseRead(update);
+  }, 3);
+
+  const place = m => (m.timeAndPlace ? [m.timeAndPlace.date, (m.timeAndPlace.place||"").replace(/^at\s+/i,"")].filter(Boolean).join(" \u00b7 ") : "");
+  const teamsHTML = m => (m.teams||[]).map(t => `
+    <div class="cricket-team-row"><span class="ct-name">${t.team}</span><span class="ct-run">${t.run || "Yet to bat"}</span></div>`).join("");
+
+  const liveCardsHTML = live.map((m, i) => {
+    const read = chaseReads[i];
+    const chaseHTML = read ? `
+      <div class="conf-wrap">
+        <div class="conf-labels"><span>Chase read: <span class="win-name">${read.chasingTeam}</span></span></div>
+        <div class="conf-bar"><div class="conf-seg home" style="width:${read.pct}%"></div><div class="conf-seg away" style="width:${100-read.pct}%"></div></div>
+        <div class="conf-pct-row"><span>${read.pct}% to get there</span><span>needs ${read.reqRR.toFixed(1)} runs/over</span></div>
+        <span class="conf-tag">Live chase read, not a final call</span>
+      </div>` : "";
+    return `
+      <div class="card cricket-card">
+        <div class="league-eyebrow"><span>${m.title || "Live match"}</span><span class="live-badge"><span class="live-pip"></span>LIVE</span></div>
+        <div class="cricket-teams">${teamsHTML(m)}</div>
+        <div class="meta"><span>${place(m)}</span></div>
+        ${chaseHTML}
+      </div>`;
+  }).join("");
+
+  const simpleCardsHTML = (list, tone) => list.map(m => `
+    <div class="card cricket-card">
+      <div class="league-eyebrow"><span>${m.title || "Match"}</span></div>
+      <div class="cricket-teams">${teamsHTML(m)}</div>
+      <div class="meta"><span>${place(m)}</span></div>
+      ${m.overview ? `<div class="rationale">${m.overview}</div>` : ""}
+    </div>`).join("");
+
+  const block = (label, html) => html ? `
+    <div class="league-block">
+      <div class="league-block-header"><span class="lb-title">${label}</span></div>
+      <div class="grid">${html}</div>
+    </div>` : "";
+
+  return `
+    <div class="model-note" style="border-left-color:var(--cyan);">
+      <span>&#128308;</span><div><b>Cricket data source:</b> live scores and chase reads come from a free, no-key Cricbuzz feed rather than TheSportsDB &mdash; this is why cricket looks different from the other sports here. The chase read is a simple required-run-rate formula, shown only while a run chase is actually on.</div>
+    </div>
+    ${block("Live Right Now", liveCardsHTML)}
+    ${block("Recently Finished", simpleCardsHTML(recent))}
+    ${block("Coming Up", simpleCardsHTML(upcoming))}`;
+}
+
+// ---------- Tennis: dedicated free data source (no API key needed) ----------
+// TheSportsDB doesn't model individual-player tour tennis well, so tennis
+// pulls straight from ESPN's public scoreboard feed instead.
+const ESPN_TENNIS_API = "https://site.api.espn.com/apis/site/v2/sports/tennis";
+
+async function espnTennisEvents(tour){
+  try{
+    const data = await getJSON(`${ESPN_TENNIS_API}/${tour}/scoreboard`);
+    return (data && data.events) || [];
+  }catch(err){ return []; }
+}
+
+function tennisPlayerName(competitor){
+  return (competitor && (competitor.athlete?.displayName || competitor.team?.displayName || competitor.displayName)) || "TBD";
+}
+
+function tennisCardHTML(ev, tourLabel){
+  const comp = ev.competitions?.[0];
+  const competitors = comp?.competitors || [];
+  const state = ev.status?.type?.state; // "pre" | "in" | "post"
+  const statusText = ev.status?.type?.shortDetail || ev.status?.type?.detail || ev.status?.type?.description || "";
+  const rows = competitors.length ? competitors.map(c => `
+    <div class="cricket-team-row"><span class="ct-name">${tennisPlayerName(c)}</span><span class="ct-run">${c.score ?? (state === "pre" ? "" : "-")}</span></div>`).join("")
+    : `<div class="cricket-team-row"><span class="ct-name">${ev.shortName || ev.name || "Match"}</span></div>`;
+  return `
+    <div class="card cricket-card">
+      <div class="league-eyebrow">
+        <span>${tourLabel} &middot; ${ev.name?.split(" - ")?.[0] || ev.shortName || "Tour event"}</span>
+        ${state === "in" ? '<span class="live-badge"><span class="live-pip"></span>LIVE</span>' : ""}
+      </div>
+      <div class="cricket-teams">${rows}</div>
+      <div class="meta"><span>${statusText}</span></div>
+    </div>`;
+}
+
+async function buildTennisSection(){
+  const [atp, wta] = await Promise.all([espnTennisEvents("atp"), espnTennisEvents("wta")]);
+  const all = [...atp.map(e => ({ e, tour:"ATP" })), ...wta.map(e => ({ e, tour:"WTA" }))];
+
+  if(all.length === 0){
+    return `<div class="state-msg" style="padding:16px 0;">No tour events on ESPN's tennis feed right now &mdash; tennis is scheduled in tournament blocks, so this fills up during active weeks.</div>`;
+  }
+
+  const live = all.filter(x => x.e.status?.type?.state === "in").slice(0,6);
+  const upcoming = all.filter(x => x.e.status?.type?.state === "pre").slice(0,6);
+  const recent = all.filter(x => x.e.status?.type?.state === "post").slice(0,4);
+
+  const block = (label, list) => list.length ? `
+    <div class="league-block">
+      <div class="league-block-header"><span class="lb-title">${label}</span></div>
+      <div class="grid">${list.map(x => tennisCardHTML(x.e, x.tour)).join("")}</div>
+    </div>` : "";
+
+  return `
+    <div class="model-note" style="border-left-color:var(--cyan);">
+      <span>&#128308;</span><div><b>Tennis data source:</b> pulled from ESPN's public ATP/WTA scoreboard feed rather than TheSportsDB, since tour tennis doesn't fit a team-league format. This is an unofficial public endpoint, so occasional gaps are possible.</div>
+    </div>
+    ${block("Live Right Now", live)}
+    ${block("Coming Up", upcoming)}
+    ${block("Recently Finished", recent)}`;
+}
+
+// simple concurrency-limited map so we don't blow past the free API's rate limit
+async function poolMap(items, worker, concurrency = 4){
+  const results = new Array(items.length);
+  let idx = 0;
+  async function runner(){
+    while(idx < items.length){
+      const cur = idx++;
+      results[cur] = await worker(items[cur]);
+    }
+  }
+  await Promise.all(Array(Math.min(concurrency, items.length)).fill(0).map(runner));
+  return results;
+}
+
+// ---------- helpers ----------
+async function getJSON(url, retries = 2){
+  for(let attempt = 0; attempt <= retries; attempt++){
+    try{
+      const res = await fetch(url);
+      if(!res.ok) throw new Error("Request failed: " + res.status);
+      return await res.json();
+    }catch(err){
+      if(attempt === retries) throw err;
+      await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
+    }
+  }
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function setContent(html){ document.getElementById('content').innerHTML = html; }
+function loadingMsg(text){ setContent(`<div class="state-msg">${text}</div>`); }
+function errorMsg(text){ setContent(`<div class="state-msg error">${text}</div>`); }
+
+// ---------- ticker ----------
+async function loadTicker(){
+  const sports = ["Soccer","Basketball","American Football","Ice Hockey","Baseball"];
+  const tickerEl = document.getElementById('ticker');
+  try{
+    const results = await Promise.all(sports.map(s =>
+      getJSON(`${API}/eventsday.php?d=${todayStr()}&s=${encodeURIComponent(s)}`).catch(()=>({events:null}))
+    ));
+    let items = [];
+    results.forEach(r => {
+      if(r.events){
+        r.events.slice(0,8).forEach(e => {
+          const played = e.intHomeScore !== null && e.intHomeScore !== undefined;
+          const score = played ? `${e.intHomeScore} - ${e.intAwayScore}` : (e.strTime ? e.strTime.slice(0,5) : "TBD");
+          items.push(`<span class="tick-item"><span class="lg">${e.strLeague}</span> ${e.strHomeTeam} <span class="score">${score}</span> ${e.strAwayTeam}</span>`);
+        });
+      }
+    });
+    if(items.length === 0){
+      tickerEl.innerHTML = `<span class="tick-item">No fixtures found for today across major leagues &mdash; browse Predictions for a specific league.</span>`;
+      tickerEl.style.animation = "none";
+    } else {
+      const html = items.join("");
+      tickerEl.innerHTML = html + html;
+    }
+  }catch(err){
+    tickerEl.innerHTML = `<span class="tick-item">Couldn't load today's board right now.</span>`;
+    tickerEl.style.animation = "none";
+  }
+}
+
+// ---------- leagues ----------
+async function loadLeagues(){
+  const sportSel = document.getElementById('sportSelect');
+  try{
+    const data = await getJSON(`${API}/all_leagues.php`);
+    const leagues = data.leagues || [];
+    leagues.forEach(l => {
+      if(!leaguesBySport[l.strSport]) leaguesBySport[l.strSport] = [];
+      leaguesBySport[l.strSport].push(l);
+    });
+    const sports = Object.keys(leaguesBySport).sort();
+    sportSel.innerHTML = `<option value="">Choose a sport (${sports.length} available)</option>` +
+      sports.map(s => `<option value="${s}">${s}</option>`).join("");
+  }catch(err){
+    sportSel.innerHTML = `<option value="">Couldn't load sports list</option>`;
+    errorMsg("Couldn't reach TheSportsDB right now. Refresh to try again.");
+  }
+}
+
+function populateLeagues(sport){
+  currentSport = sport;
+  const leagueSel = document.getElementById('leagueSelect');
+  const list = (leaguesBySport[sport] || []).sort((a,b) => a.strLeague.localeCompare(b.strLeague));
+  if(list.length === 0){ leagueSel.innerHTML = `<option value="">No leagues found</option>`; return; }
+  leagueSel.innerHTML = list.map(l => `<option value="${l.idLeague}" data-name="${l.strLeague}">${l.strLeague}</option>`).join("");
+  currentLeagueId = list[0].idLeague;
+  currentLeagueName = list[0].strLeague;
+}
+
+// ---------- events rendering (schedule/results) ----------
+function renderEvents(events, kind, fallbackName){
+  const label = fallbackName || currentLeagueName;
+  if(!events || events.length === 0){
+    setContent(`<div class="state-msg">No ${kind} found for ${label} right now.</div>`);
+    return;
+  }
+  const cards = events.map(e => {
+    const played = kind === "results";
+    const scoreHtml = played
+      ? `<div class="score-box">${e.intHomeScore ?? '-'} : ${e.intAwayScore ?? '-'}</div>`
+      : `<div class="score-box">${(e.strTime||"TBD").slice(0,5)}</div>`;
+    return `
+      <div class="card">
+        <div class="league-eyebrow">${e.strLeague || label}</div>
+        <div class="matchup">
+          <div class="team home">${e.strHomeTeam}</div>
+          ${scoreHtml}
+          <div class="team away">${e.strAwayTeam}</div>
+        </div>
+        <div class="meta"><span>${e.dateEvent || ""}</span><span>${e.strVenue || ""}</span></div>
+      </div>`;
+  }).join("");
+  setContent(`<div class="grid">${cards}</div>`);
+}
+
+async function loadFixtures(){
+  if(!currentLeagueId) return;
+  loadingMsg("Loading schedule\u2026");
+  try{
+    const data = await getJSON(`${API}/eventsnextleague.php?id=${currentLeagueId}`);
+    renderEvents(data.events, "scheduled fixtures");
+  }catch(err){ errorMsg("Couldn't load the schedule. Try another league."); }
+}
+
+async function loadResults(){
+  if(!currentLeagueId) return;
+  loadingMsg("Loading recent results\u2026");
+  try{
+    const data = await getJSON(`${API}/eventspastleague.php?id=${currentLeagueId}`);
+    renderEvents(data.results, "results");
+  }catch(err){ errorMsg("Couldn't load results. Try another league."); }
+}
+
+// ---------- standings ----------
+async function loadStandings(){
+  if(!currentLeagueId) return;
+  loadingMsg("Loading standings\u2026");
+  try{
+    const seasonData = await getJSON(`${API}/search_all_seasons.php?id=${currentLeagueId}`);
+    const seasons = seasonData.seasons || [];
+    if(seasons.length === 0){ errorMsg(`No season data available for ${currentLeagueName}.`); return; }
+    const latestSeason = seasons[seasons.length - 1].strSeason;
+    const tableData = await getJSON(`${API}/lookuptable.php?l=${currentLeagueId}&s=${encodeURIComponent(latestSeason)}`);
+    const rows = tableData.table;
+    if(!rows || rows.length === 0){
+      errorMsg(`Standings aren't published for ${currentLeagueName} (${latestSeason}) yet.`);
+      return;
+    }
+    const body = rows.map(r => `
+      <tr>
+        <td class="rank-cell">${r.intRank}</td><td>${r.strTeam}</td>
+        <td>${r.intPlayed}</td><td>${r.intWin}</td><td>${r.intDraw ?? '-'}</td>
+        <td>${r.intLoss}</td><td>${r.intPoints}</td>
+      </tr>`).join("");
+    setContent(`
+      <div class="league-eyebrow" style="margin-bottom:10px;">${currentLeagueName} &mdash; ${latestSeason}</div>
+      <table><thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead>
+      <tbody>${body}</tbody></table>`);
+  }catch(err){ errorMsg("Couldn't load standings for this league."); }
+}
+
+// ---------- prediction engine ----------
+async function getTeamForm(teamId){
+  if(teamFormCache[teamId]) return teamFormCache[teamId];
+  try{
+    const data = await getJSON(`${API}/eventslast.php?id=${teamId}`);
+    const results = (data.results || []).slice(0,5);
+    let points=0, gf=0, ga=0, count=0, letters=[];
+    results.forEach(r => {
+      const hs = r.intHomeScore, as = r.intAwayScore;
+      if(hs === null || hs === undefined || as === null || as === undefined) return;
+      const isHome = String(r.idHomeTeam) === String(teamId);
+      const my = Number(isHome ? hs : as);
+      const opp = Number(isHome ? as : hs);
+      gf += my; ga += opp; count++;
+      if(my > opp){ points += 3; letters.push('W'); }
+      else if(my === opp){ points += 1; letters.push('D'); }
+      else{ letters.push('L'); }
+    });
+    const formScore = count > 0 ? points / (3*count) : 0.5;
+    const avgGD = count > 0 ? (gf - ga) / count : 0;
+    const result = { formScore, avgGD, count, record: letters.join('') || '—' };
+    teamFormCache[teamId] = result;
+    return result;
+  }catch(err){
+    return { formScore:0.5, avgGD:0, count:0, record:'—' };
+  }
+}
+
+function computePrediction(homeForm, awayForm, homeTeam, awayTeam, sport){
+  const HOME_ADV = 0.06;
+  const norm = gd => Math.max(-1, Math.min(1, gd/3));
+  const ratingHome = homeForm.formScore*0.7 + ((norm(homeForm.avgGD)+1)/2)*0.3 + HOME_ADV;
+  const ratingAway = awayForm.formScore*0.7 + ((norm(awayForm.avgGD)+1)/2)*0.3;
+  const diff = ratingHome - ratingAway;
+  const pHomeRaw = 1/(1+Math.exp(-diff*6));
+
+  let pHome, pAway, pDraw;
+  const hasDraw = DRAW_SPORTS.includes(sport);
+  if(hasDraw){
+    const closeness = 1 - Math.min(Math.abs(diff)*3, 1);
+    pDraw = 0.14 + closeness*0.16;
+    pHome = pHomeRaw * (1-pDraw);
+    pAway = (1-pHomeRaw) * (1-pDraw);
+  } else {
+    pDraw = 0; pHome = pHomeRaw; pAway = 1-pHomeRaw;
+  }
+
+  let hPct = Math.round(pHome*100), dPct = Math.round(pDraw*100), aPct = 100 - hPct - dPct;
+  const maxPct = Math.max(hPct, dPct, aPct);
+  let pick, tag;
+  if(maxPct === hPct) pick = homeTeam;
+  else if(maxPct === aPct) pick = awayTeam;
+  else pick = "Draw";
+  if(maxPct >= 60) tag = "High confidence";
+  else if(maxPct >= 50) tag = "Lean";
+  else tag = "Coin flip";
+
+  return { hPct, dPct, aPct, pick, tag, isTopPick: maxPct >= 60 };
+}
+
+async function buildPredictionEntries(events, fallbackSport){
+  const teamIds = [...new Set(events.flatMap(e => [e.idHomeTeam, e.idAwayTeam].filter(Boolean)))];
+  const formPairs = await poolMap(teamIds, async id => [id, await getTeamForm(id)], 4);
+  const formMap = Object.fromEntries(formPairs);
+  return events.map(e => {
+    const sport = e.strSport || fallbackSport;
+    const homeForm = formMap[e.idHomeTeam] || { formScore:0.5, avgGD:0, count:0, record:'—' };
+    const awayForm = formMap[e.idAwayTeam] || { formScore:0.5, avgGD:0, count:0, record:'—' };
+    const pred = computePrediction(homeForm, awayForm, e.strHomeTeam, e.strAwayTeam, sport);
+    return { e, pred, sport, homeForm, awayForm };
+  });
+}
+
+function predictionCardHTML(entry, fallbackLeagueName){
+  const { e, pred, sport, homeForm, awayForm } = entry;
+  const showDraw = DRAW_SPORTS.includes(sport);
+  return `
+    <div class="card ${pred.isTopPick ? 'top-pick' : ''}">
+      <div class="league-eyebrow">
+        <span>${e.strLeague || fallbackLeagueName}</span>
+        ${pred.isTopPick ? '<span class="pick-badge">Top Pick</span>' : ''}
+      </div>
+      <div class="matchup">
+        <div class="team home">${e.strHomeTeam}</div>
+        <div class="score-box">vs</div>
+        <div class="team away">${e.strAwayTeam}</div>
+      </div>
+      <div class="conf-wrap">
+        <div class="conf-labels">
+          <span>Predicted: <span class="win-name">${pred.pick}</span></span>
+          <span>${e.dateEvent || ''}</span>
+        </div>
+        <div class="conf-bar">
+          <div class="conf-seg home" style="width:${pred.hPct}%"></div>
+          ${showDraw ? `<div class="conf-seg draw" style="width:${pred.dPct}%"></div>` : ''}
+          <div class="conf-seg away" style="width:${pred.aPct}%"></div>
+        </div>
+        <div class="conf-pct-row">
+          <span>${e.strHomeTeam} ${pred.hPct}%</span>
+          ${showDraw ? `<span>Draw ${pred.dPct}%</span>` : ''}
+          <span>${e.strAwayTeam} ${pred.aPct}%</span>
+        </div>
+        <span class="conf-tag">${pred.tag}</span>
+      </div>
+      <div class="rationale">Form (last ${homeForm.count||0}): ${e.strHomeTeam} ${homeForm.record} &middot; ${e.strAwayTeam} ${awayForm.record}. Home-field edge applied.</div>
+    </div>`;
+}
+
+function renderPredictionCard(e, formMap, fallbackLeagueName, fallbackSport){
+  const sport = e.strSport || fallbackSport;
+  const homeForm = formMap[e.idHomeTeam] || { formScore:0.5, avgGD:0, count:0, record:'—' };
+  const awayForm = formMap[e.idAwayTeam] || { formScore:0.5, avgGD:0, count:0, record:'—' };
+  const pred = computePrediction(homeForm, awayForm, e.strHomeTeam, e.strAwayTeam, sport);
+  return predictionCardHTML({ e, pred, sport, homeForm, awayForm }, fallbackLeagueName);
+}
+
+const EXTERNAL_LINKS = {
+  Kabaddi: { url:"https://www.prokabaddi.com/matches", cta:"View live PKL matches & scores" }
+};
+
+function noDataCardHTML(cat, hasLeagueButNoFixtures){
+  const link = EXTERNAL_LINKS[cat.label];
+  const headline = hasLeagueButNoFixtures
+    ? `No ${cat.label.toLowerCase()} matches on the calendar right now.`
+    : `${cat.label} isn't wired up to a live data feed yet.`;
+  return `
+    <div class="card empty-card">
+      <div class="empty-emoji">${cat.emoji}</div>
+      <div class="empty-headline">${headline}</div>
+      ${link ? `<a class="empty-link-btn" href="${link.url}" target="_blank" rel="noopener">${link.cta} &rarr;</a>`
+             : `<div class="empty-sub">Check back once this section is connected to a live source.</div>`}
+    </div>`;
+}
+
+const MODEL_NOTE = `<div class="model-note"><span>&#9432;</span><div><b>How this works:</b> predictions come from a transparent statistical model &mdash; each team's last 5 results, goal/point differential, and a small home-field boost &mdash; run through a probability formula. It's not a black-box neural network, and it isn't betting advice.</div></div>`;
+
+async function buildPredictionsFromEvents(events, fallbackLeagueName, fallbackSport){
+  const teamIds = new Set();
+  events.forEach(e => { if(e.idHomeTeam) teamIds.add(e.idHomeTeam); if(e.idAwayTeam) teamIds.add(e.idAwayTeam); });
+  const formEntries = await Promise.all([...teamIds].map(async id => [id, await getTeamForm(id)]));
+  const formMap = Object.fromEntries(formEntries);
+  return events.map(e => renderPredictionCard(e, formMap, fallbackLeagueName, fallbackSport)).join("");
+}
+
+async function loadPredictions(){
+  if(!currentLeagueId) return;
+  loadingMsg("Analyzing recent form and generating predictions\u2026");
+  try{
+    const data = await getJSON(`${API}/eventsnextleague.php?id=${currentLeagueId}`);
+    const events = (data.events || []).slice(0,8);
+    if(events.length === 0){
+      setContent(`<div class="state-msg">No upcoming fixtures found for ${currentLeagueName} to predict.</div>`);
+      return;
+    }
+    const cards = await buildPredictionsFromEvents(events, currentLeagueName, currentSport);
+    setContent(`${MODEL_NOTE}<div class="grid">${cards}</div>`);
+  }catch(err){
+    errorMsg("Couldn't generate predictions for this league right now.");
+  }
+}
+
+// ---------- multi-league home feed ----------
+async function findFeaturedLeagues(){
+  const flat = Object.values(leaguesBySport).flat();
+  const found = [];
+  SPORT_CATEGORIES.filter(cat => !cat.source).forEach(cat => {
+    const byKeyword = flat.filter(l => cat.leagueKeywords.some(k => l.strLeague.toLowerCase().includes(k)));
+    const bySport = flat.filter(l => (l.strSport || "").toLowerCase() === cat.sport.toLowerCase());
+    let pool = byKeyword.length ? byKeyword : bySport;
+    if(pool.length === 0 && KNOWN_LEAGUE_IDS[cat.label]) pool = KNOWN_LEAGUE_IDS[cat.label];
+    const picks = pool.slice(0, LEAGUES_PER_CATEGORY);
+    if(picks.length === 0){
+      found.push({ idLeague:null, strLeague:null, strSport:cat.sport, categoryLabel:cat.label, categoryEmoji:cat.emoji, unavailable:true });
+    } else {
+      picks.forEach(l => found.push({ ...l, categoryLabel:cat.label, categoryEmoji:cat.emoji }));
+    }
+  });
+  featuredLeagues = found;
+}
+
+async function loadHomeFeedPredictions(){
+  loadingMsg("Scanning cricket, football, kabaddi, tennis and basketball for today's picks\u2026");
+  try{
+    if(featuredLeagues.length === 0) await findFeaturedLeagues();
+
+    const realLeagues = featuredLeagues.filter(l => !l.unavailable);
+    const [perLeague, cricketBodyHTML, tennisBodyHTML] = await Promise.all([
+      Promise.all(realLeagues.map(async l => {
+        try{
+          const data = await getJSON(`${API}/eventsnextleague.php?id=${l.idLeague}`);
+          const events = (data.events || []).slice(0, PREDICTIONS_PER_LEAGUE)
+            .map(e => ({ ...e, strLeague: e.strLeague || l.strLeague, strSport: e.strSport || l.strSport }));
+          return { league: l, events };
+        }catch(err){ return { league: l, events: [] }; }
+      })),
+      buildCricketSection(),
+      buildTennisSection()
+    ]);
+
+    homeFeedNextCache = perLeague.flatMap(g => g.events);
+
+    for(const group of perLeague){
+      group.entries = group.events.length ? await buildPredictionEntries(group.events, group.league.strSport) : [];
+    }
+
+    const allEntries = perLeague.flatMap(g => g.entries);
+    const topPicks = [...allEntries]
+      .sort((a,b) => Math.max(b.pred.hPct,b.pred.dPct,b.pred.aPct) - Math.max(a.pred.hPct,a.pred.dPct,a.pred.aPct))
+      .slice(0,4);
+    const topPicksHTML = topPicks.length ? `
+      <h2 class="section-heading">&#128293; Today's Top Picks</h2>
+      <div class="grid">${topPicks.map(entry => predictionCardHTML(entry, entry.e.strLeague)).join("")}</div>
+    ` : "";
+
+    const navHTML = `<div class="cat-nav">${SPORT_CATEGORIES.map(cat =>
+      `<a href="#cat-${cat.label.toLowerCase()}" class="cat-chip">${cat.emoji} ${cat.label}</a>`).join("")}</div>`;
+
+    const SPECIAL_BODIES = { cricbuzz: cricketBodyHTML, espn: tennisBodyHTML };
+
+    const categorySections = SPORT_CATEGORIES.map(cat => {
+      if(cat.source && SPECIAL_BODIES[cat.source] !== undefined){
+        return `
+          <section class="category-block" id="cat-${cat.label.toLowerCase()}">
+            <div class="category-header"><span class="cat-emoji">${cat.emoji}</span><h2 class="section-heading">${cat.label}</h2></div>
+            ${SPECIAL_BODIES[cat.source]}
+          </section>`;
+      }
+
+      const catGroups = perLeague.filter(g => g.league.categoryLabel === cat.label);
+      const hasRealLeague = featuredLeagues.some(l => l.categoryLabel === cat.label && !l.unavailable);
+      const matchCount = catGroups.reduce((sum,g) => sum + g.entries.length, 0);
+
+      let body;
+      if(!hasRealLeague || matchCount === 0){
+        body = noDataCardHTML(cat, hasRealLeague);
+      } else {
+        body = catGroups.filter(g => g.entries.length).map(g => `
+          <div class="league-block">
+            <div class="league-block-header">
+              <span class="lb-title">${g.league.strLeague}</span>
+              <span class="lb-count">${g.entries.length} match${g.entries.length===1?'':'es'}</span>
+            </div>
+            <div class="grid">${g.entries.map(entry => predictionCardHTML(entry, g.league.strLeague)).join("")}</div>
+          </div>`).join("");
+      }
+
+      return `
+        <section class="category-block" id="cat-${cat.label.toLowerCase()}">
+          <div class="category-header"><span class="cat-emoji">${cat.emoji}</span><h2 class="section-heading">${cat.label} Predictions</h2></div>
+          ${body}
+        </section>`;
+    }).join("");
+
+    setContent(`
+      ${MODEL_NOTE}
+      ${topPicksHTML}
+      ${navHTML}
+      ${categorySections}`);
+  }catch(err){
+    errorMsg("Couldn't load predictions right now. Refresh to try again.");
+  }
+}
+
+async function loadHomeFeedSchedule(){
+  loadingMsg("Loading upcoming fixtures across featured leagues\u2026");
+  try{
+    if(featuredLeagues.length === 0) await findFeaturedLeagues();
+    let events = homeFeedNextCache;
+    if(!events){
+      const perLeague = await Promise.all(featuredLeagues.filter(l => !l.unavailable).map(async l => {
+        try{
+          const data = await getJSON(`${API}/eventsnextleague.php?id=${l.idLeague}`);
+          return (data.events || []).slice(0,SCHEDULE_PER_LEAGUE).map(e => ({ ...e, strLeague: e.strLeague || l.strLeague }));
+        }catch(err){ return []; }
+      }));
+      events = perLeague.flat();
+      homeFeedNextCache = events;
+    }
+    renderEvents(events, "scheduled fixtures", "Featured leagues");
+  }catch(err){ errorMsg("Couldn't load the schedule. Refresh to try again."); }
+}
+
+async function loadHomeFeedResults(){
+  loadingMsg("Loading recent results across featured leagues\u2026");
+  try{
+    if(featuredLeagues.length === 0) await findFeaturedLeagues();
+    let events = homeFeedPastCache;
+    if(!events){
+      const perLeague = await Promise.all(featuredLeagues.filter(l => !l.unavailable).map(async l => {
+        try{
+          const data = await getJSON(`${API}/eventspastleague.php?id=${l.idLeague}`);
+          return (data.results || []).slice(0,SCHEDULE_PER_LEAGUE).map(e => ({ ...e, strLeague: e.strLeague || l.strLeague }));
+        }catch(err){ return []; }
+      }));
+      events = perLeague.flat();
+      homeFeedPastCache = events;
+    }
+    renderEvents(events, "results", "Featured leagues");
+  }catch(err){ errorMsg("Couldn't load results. Refresh to try again."); }
+}
+
+async function loadHomeFeedStandings(){
+  if(featuredLeagues.length === 0) await findFeaturedLeagues();
+  const firstReal = featuredLeagues.find(l => !l.unavailable);
+  if(!firstReal){ errorMsg("Couldn't find a featured league for standings."); return; }
+  currentLeagueId = firstReal.idLeague;
+  currentLeagueName = firstReal.strLeague;
+  await loadStandings();
+}
+
+// ---------- search ----------
+function renderSearchForm(kind){
+  const label = kind === "teams" ? "Search teams (e.g. Lakers, Arsenal)" : "Search players (e.g. Messi, LeBron James)";
+  setContent(`
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="${label}" style="flex:1;">
+      <button id="searchBtn">Search</button>
+    </div>
+    <div id="searchResults"></div>`);
+  document.getElementById('searchBtn').addEventListener('click', () => runSearch(kind));
+  document.getElementById('searchInput').addEventListener('keydown', (e) => { if(e.key === "Enter") runSearch(kind); });
+}
+
+async function runSearch(kind){
+  const q = document.getElementById('searchInput').value.trim();
+  const resultsEl = document.getElementById('searchResults');
+  if(!q){ resultsEl.innerHTML = `<div class="state-msg">Type a name to search.</div>`; return; }
+  resultsEl.innerHTML = `<div class="state-msg">Searching\u2026</div>`;
+  try{
+    if(kind === "teams"){
+      const data = await getJSON(`${API}/searchteams.php?t=${encodeURIComponent(q)}`);
+      const teams = data.teams;
+      if(!teams){ resultsEl.innerHTML = `<div class="state-msg">No teams found for "${q}".</div>`; return; }
+      resultsEl.innerHTML = teams.map(t => `
+        <div class="team-card">
+          <img src="${t.strTeamBadge || t.strTeamLogo || ''}" alt="" onerror="this.style.display='none'">
+          <div><div class="pc-name">${t.strTeam}</div>
+          <div class="pc-sub">${t.strSport} &middot; ${t.strLeague || 'Independent'} &middot; ${t.strCountry || ''}</div></div>
+        </div>`).join("");
+    } else {
+      const data = await getJSON(`${API}/searchplayers.php?p=${encodeURIComponent(q)}`);
+      const players = data.player;
+      if(!players){ resultsEl.innerHTML = `<div class="state-msg">No players found for "${q}".</div>`; return; }
+      resultsEl.innerHTML = players.map(p => `
+        <div class="player-card">
+          <img src="${p.strThumb || p.strCutout || ''}" alt="" onerror="this.style.display='none'">
+          <div><div class="pc-name">${p.strPlayer}</div>
+          <div class="pc-sub">${p.strSport || ''} &middot; ${p.strTeam || 'Free agent'} &middot; ${p.strNationality || ''}</div></div>
+        </div>`).join("");
+    }
+  }catch(err){ resultsEl.innerHTML = `<div class="state-msg error">Search failed. Try again.</div>`; }
+}
+
+// ---------- tab routing ----------
+function renderActiveTab(){
+  const allBtn = document.getElementById('allLeaguesBtn');
+  allBtn.classList.toggle('active', isHomeFeed);
+
+  if(isHomeFeed){
+    if(activeTab === "predictions") return loadHomeFeedPredictions();
+    if(activeTab === "fixtures") return loadHomeFeedSchedule();
+    if(activeTab === "results") return loadHomeFeedResults();
+    if(activeTab === "standings") return loadHomeFeedStandings();
+    if(activeTab === "teams") return renderSearchForm("teams");
+    if(activeTab === "players") return renderSearchForm("players");
+    return;
+  }
+
+  if((activeTab === "fixtures" || activeTab === "results" || activeTab === "standings" || activeTab === "predictions") && !currentLeagueId){
+    setContent(`<div class="state-msg">Pick a sport and league above to get started.</div>`);
+    return;
+  }
+  if(activeTab === "predictions") loadPredictions();
+  else if(activeTab === "fixtures") loadFixtures();
+  else if(activeTab === "results") loadResults();
+  else if(activeTab === "standings") loadStandings();
+  else if(activeTab === "teams") renderSearchForm("teams");
+  else if(activeTab === "players") renderSearchForm("players");
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab = btn.dataset.tab;
+    renderActiveTab();
+  });
+});
+
+document.getElementById('allLeaguesBtn').addEventListener('click', () => {
+  isHomeFeed = true;
+  document.getElementById('sportSelect').value = "";
+  document.getElementById('leagueSelect').innerHTML = `<option value="">Select a sport first</option>`;
+  currentLeagueId = null;
+  currentLeagueName = null;
+  renderActiveTab();
+});
+
+document.getElementById('sportSelect').addEventListener('change', (e) => {
+  const sport = e.target.value;
+  if(!sport){
+    document.getElementById('leagueSelect').innerHTML = `<option value="">Select a sport first</option>`;
+    currentLeagueId = null;
+    return;
+  }
+  isHomeFeed = false;
+  populateLeagues(sport);
+  renderActiveTab();
+});
+
+document.getElementById('leagueSelect').addEventListener('change', (e) => {
+  const opt = e.target.selectedOptions[0];
+  isHomeFeed = false;
+  currentLeagueId = e.target.value;
+  currentLeagueName = opt ? opt.dataset.name : "";
+  renderActiveTab();
+});
+
+// ---------- init ----------
+loadTicker();
+setInterval(loadTicker, 5 * 60 * 1000); // refresh the live-ish ticker every 5 minutes
+loadLeagues().then(() => {
+  renderActiveTab();
+});
+</script>
+
+<a class="wa-fab" href="https://wa.me/918962319138?text=Hi%2C%20I%27d%20like%20my%20Account%20ID" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp to get your Account ID instantly">
+  <svg class="wa-icon" width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+    <path fill="#fff" d="M16.03 3C9.05 3 3.4 8.65 3.4 15.63c0 2.42.68 4.68 1.85 6.61L3 29l6.95-2.21a12.55 12.55 0 0 0 6.08 1.55h.01c6.98 0 12.63-5.65 12.63-12.63C28.67 8.73 23.02 3.08 16.03 3Zm0 22.86h-.01a10.2 10.2 0 0 1-5.2-1.42l-.37-.22-4.13 1.31 1.35-4.02-.24-.41a10.16 10.16 0 0 1-1.58-5.47c0-5.65 4.6-10.24 10.26-10.24 2.74 0 5.31 1.07 7.25 3.01a10.16 10.16 0 0 1 3 7.24c0 5.65-4.6 10.22-10.33 10.22Zm5.61-7.66c-.31-.15-1.82-.9-2.1-1-.28-.1-.49-.15-.69.15-.2.31-.79 1-.97 1.2-.18.21-.36.23-.66.08-.31-.15-1.3-.48-2.47-1.53-.91-.81-1.53-1.82-1.71-2.12-.18-.31-.02-.47.13-.62.14-.14.31-.36.46-.54.15-.18.2-.31.31-.51.1-.21.05-.39-.02-.54-.08-.15-.69-1.66-.94-2.28-.25-.6-.5-.52-.69-.53h-.59c-.2 0-.54.08-.82.39-.28.31-1.08 1.05-1.08 2.56s1.1 2.97 1.26 3.17c.15.21 2.16 3.3 5.24 4.63.73.32 1.3.5 1.75.65.73.23 1.4.2 1.93.12.59-.09 1.82-.74 2.07-1.46.26-.72.26-1.33.18-1.46-.08-.13-.28-.21-.59-.36Z"/>
+  </svg>
+  <span class="wa-label">Get Your Account ID Instantly</span>
+</a>
+
+</body>
+</html>
